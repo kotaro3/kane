@@ -11,24 +11,31 @@ import javax.swing.JFrame;
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.Player;
 
-public class Kane extends JFrame {
+public class Kane extends JFrame implements AutoCloseable {
 
 	private Player player;
 
 	private BufferedInputStream stream;
 
 	public void play(String file) throws JavaLayerException, FileNotFoundException {
-		stream = new BufferedInputStream((new FileInputStream(file)));
-		player = new Player(stream);
+		if (player == null) {
+			stream = new BufferedInputStream((new FileInputStream(file)));
+			player = new Player(stream);
+		}
 		player.play();
 	}
 
-	public void close() throws IOException {
-		if (player != null) {
-			player.close();
-		}
-		if (stream != null) {
-			stream.close();
+	@Override
+	public void close() {
+		try {
+			if (player != null) {
+				player.close();
+			}
+			if (stream != null) {
+				stream.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -46,9 +53,7 @@ public class Kane extends JFrame {
 				String cmd = e.getActionCommand();
 				switch (cmd) {
 				case "鐘かね言うんじゃねえよガキのくせによぉ！？":
-					Kane kane = new Kane();
-					
-					try {
+					try (Kane kane = new Kane()) {
 						for(int i = 0;i <= 108;i++){
 							kane.play("nc8370.mp3");
 						}
@@ -57,14 +62,6 @@ public class Kane extends JFrame {
 						e1.printStackTrace();
 					} catch (JavaLayerException e2) {
 						e2.printStackTrace();
-					} finally {
-						if (kane != null) {
-							try {
-								kane.close();
-							} catch (IOException e3) {
-								e3.printStackTrace();
-							}
-						}
 					}
 
 					break;
